@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chrome Dino Game</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#ececec;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.game{
+    width:900px;
+    max-width:95%;
+    height:300px;
+    background:white;
+    border:3px solid #222;
+    position:relative;
+    overflow:hidden;
+}
+
+/* Score */
+
+#score{
+    position:absolute;
+    top:10px;
+    right:20px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+/* Ground */
+
+.ground{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:4px;
+    background:#222;
+}
+
+/* Dino */
+
+#dino{
+    position:absolute;
+    left:60px;
+    bottom:4px;
+    width:60px;
+    height:70px;
+}
+
+/* Body */
+#dino .body{
+    position:absolute;
+    width:38px;
+    height:40px;
+    background:#333;
+    left:15px;
+    bottom:20px;
+    border-radius:4px;
+}
+
+/* Head */
+#dino .head{
+    position:absolute;
+    width:26px;
+    height:26px;
+    background:#333;
+    left:28px;
+    bottom:48px;
+    border-radius:3px;
+}
+
+/* Eye */
+#dino .eye{
+    position:absolute;
+    width:4px;
+    height:4px;
+    background:white;
+    left:43px;
+    bottom:62px;
+    border-radius:50%;
+}
+
+/* Tail */
+#dino .tail{
+    position:absolute;
+    width:18px;
+    height:8px;
+    background:#333;
+    left:3px;
+    bottom:38px;
+    transform:rotate(-25deg);
+}
+
+/* Legs */
+#dino .leg1,
+#dino .leg2{
+    position:absolute;
+    width:7px;
+    height:18px;
+    background:#333;
+    bottom:4px;
+}
+
+#dino .leg1{
+    left:20px;
+}
+
+#dino .leg2{
+    left:38px;
+}
+
+/* Arms */
+#dino .arm{
+    position:absolute;
+    width:10px;
+    height:6px;
+    background:#333;
+    left:40px;
+    bottom:35px;
+}
+
+/* Obstacle */
+
+#obstacle{
+    position:absolute;
+    bottom:4px;
+    right:-40px;
+    width:30px;
+    height:60px;
+    animation:move 2s linear infinite;
+}
+
+/* Cactus */
+
+.c1,.c2,.c3{
+    position:absolute;
+    background:green;
+}
+
+.c1{
+    width:10px;
+    height:60px;
+    left:10px;
+}
+
+.c2{
+    width:8px;
+    height:25px;
+    left:0;
+    top:20px;
+}
+
+.c3{
+    width:8px;
+    height:25px;
+    right:0;
+    top:10px;
+}
+
+@keyframes move{
+
+from{
+right:-40px;
+}
+
+to{
+right:100%;
+}
+
+}
+
+.jump{
+animation:jump .55s ease;
+}
+
+@keyframes jump{
+
+0%{
+bottom:4px;
+}
+
+50%{
+bottom:140px;
+}
+
+100%{
+bottom:4px;
+}
+
+}
+
+#gameOver{
+position:absolute;
+width:100%;
+top:35%;
+text-align:center;
+font-size:45px;
+color:red;
+display:none;
+font-weight:bold;
+}
+
+#restartBtn{
+
+position:absolute;
+top:58%;
+left:50%;
+transform:translateX(-50%);
+padding:12px 28px;
+font-size:20px;
+cursor:pointer;
+display:none;
+border:none;
+background:#222;
+color:white;
+border-radius:6px;
+
+}
+
+button:hover{
+background:#444;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<div id="score">Score : 0</div>
+
+<div id="gameOver">GAME OVER</div>
+
+<button id="restartBtn">Restart</button>
+
+<div id="dino">
+
+<div class="tail"></div>
+<div class="body"></div>
+<div class="head"></div>
+<div class="eye"></div>
+<div class="arm"></div>
+<div class="leg1"></div>
+<div class="leg2"></div>
+
+</div>
+
+<div id="obstacle">
+
+<div class="c1"></div>
+<div class="c2"></div>
+<div class="c3"></div>
+
+</div>
+
+<div class="ground"></div>
+
+</div>
+
+<script>
+
+const dino=document.getElementById("dino");
+const obstacle=document.getElementById("obstacle");
+const scoreText=document.getElementById("score");
+const restartBtn=document.getElementById("restartBtn");
+const gameOver=document.getElementById("gameOver");
+
+let score=0;
+let gameRunning=true;
+
+document.addEventListener("keydown",(e)=>{
+
+if(e.code==="Space")
+jump();
+
+});
+
+function jump(){
+
+if(!gameRunning) return;
+
+if(dino.classList.contains("jump")) return;
+
+dino.classList.add("jump");
+
+setTimeout(()=>{
+
+dino.classList.remove("jump");
+
+},550);
+
+}
+
+let scoreInterval=setInterval(updateScore,100);
+
+function updateScore(){
+
+if(gameRunning){
+
+score++;
+scoreText.innerHTML="Score : "+score;
+
+}
+
+}
+
+let collision=setInterval(checkCollision,10);
+
+function checkCollision(){
+
+let dinoBottom=parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
+
+let obstacleLeft=obstacle.getBoundingClientRect().left;
+
+let dinoLeft=dino.getBoundingClientRect().left;
+
+if(
+
+obstacleLeft>dinoLeft &&
+obstacleLeft<dinoLeft+55 &&
+dinoBottom<60
+
+){
+
+gameRunning=false;
+
+obstacle.style.animationPlayState="paused";
+
+gameOver.style.display="block";
+
+restartBtn.style.display="block";
+
+}
+
+}
+
+restartBtn.onclick=function(){
+
+score=0;
+
+scoreText.innerHTML="Score : 0";
+
+gameRunning=true;
+
+gameOver.style.display="none";
+
+restartBtn.style.display="none";
+
+obstacle.style.animation="none";
+
+obstacle.offsetHeight;
+
+obstacle.style.animation="move 2s linear infinite";
+
+};
+
+</script>
+
+</body>
+</html>
